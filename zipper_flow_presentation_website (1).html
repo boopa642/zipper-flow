@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZIPPER-FLOW AI | 지퍼합류 스마트 제어 시스템</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        darkbg: '#0B0F19',
+                        cardbg: 'rgba(21, 29, 44, 0.75)',
+                        neonCyan: '#00F2FE',
+                        neonOrange: '#FF5E00',
+                        neonGreen: '#00FF66',
+                        neonRed: '#FF2E63',
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 25px rgba(0, 242, 254, 0.35)',
+                        'neon-orange': '0 0 25px rgba(255, 94, 0, 0.35)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0F19;
+            color: #F1F5F9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-card {
+            background: rgba(18, 25, 38, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 242, 254, 0.15);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        .neon-text-cyan {
+            text-shadow: 0 0 12px rgba(0, 242, 254, 0.5);
+        }
+        .neon-text-orange {
+            text-shadow: 0 0 12px rgba(255, 94, 0, 0.5);
+        }
+        .grid-bg {
+            background-image: radial-gradient(rgba(0, 242, 254, 0.08) 1px, transparent 0);
+            background-size: 28px 28px;
+        }
+        /* Custom scrollbar for inner tab cards */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased grid-bg flex flex-col justify-between">
+
+    <!-- TOP FIXED HEADER & TAB NAVIGATION BAR -->
+    <header class="sticky top-0 z-50 glass-card border-b border-cyan-900/40 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-neon-cyan">
+                        <i class="fa-solid fa-bolt text-slate-950 font-black text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-lg font-black tracking-wider text-white">ZIPPER<span class="text-neonCyan">-FLOW</span></span>
+                        <span class="block text-[9px] text-cyan-400 tracking-widest font-semibold uppercase">Smart Merge Control</span>
+                    </div>
+                </div>
+                <!-- Mobile Tab Counter Indicator -->
+                <span id="mobileTabIndicator" class="md:hidden text-xs font-mono font-bold text-neonCyan bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
+                    1 / 6
+                </span>
+            </div>
+
+            <!-- 6 Presentation Tabs Navigation -->
+            <nav class="w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                <div class="flex items-center gap-1.5 sm:gap-2 min-w-max">
+                    <button onclick="switchTab(1)" id="tabBtn-1" class="tab-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-neon-cyan">
+                        <span class="font-mono text-[11px] opacity-80">1.</span> 문제 제기
+                    </button>
+                    <button onclick="switchTab(2)" id="tabBtn-2" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">
+                        <span class="font-mono text-[11px] opacity-80">2.</span> 우리만의 해결책
+                    </button>
+                    <button onclick="switchTab(3)" id="tabBtn-3" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">
+                        <span class="font-mono text-[11px] opacity-80">3.</span> 누가 돈을 내고 쓰는가?
+                    </button>
+                    <button onclick="switchTab(4)" id="tabBtn-4" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">
+                        <span class="font-mono text-[11px] opacity-80">4.</span> 왜 우리 제품인가?
+                    </button>
+                    <button onclick="switchTab(5)" id="tabBtn-5" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">
+                        <span class="font-mono text-[11px] opacity-80">5.</span> 수익 모델
+                    </button>
+                    <button onclick="switchTab(6)" id="tabBtn-6" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">
+                        <span class="font-mono text-[11px] opacity-80">6.</span> 팀의 비전
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER (DISPLAYING SELECTED TAB CONTENT) -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col justify-center">
+
+        <!-- ================= TAB 1: 문제 제기 ================= -->
+        <section id="tabContent-1" class="tab-content block space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-mono font-bold text-neonOrange tracking-widest uppercase">// SECTION 01</span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">1. 문제 제기</h1>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- 1. 일상의 불편함 -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl glass-card-hover border-orange-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-neonOrange text-2xl mb-5">
+                            <i class="fa-solid fa-bus-simple"></i>
+                        </div>
+                        <span class="text-xs text-neonOrange font-mono font-bold block mb-1">01. DAILY INCONVENIENCE</span>
+                        <h3 class="text-xl font-bold text-white mb-3">일상의 불편함</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-light">
+                            <strong>학생들이 매일 겪는 실제 사례:</strong> 등교 시간(08:00~08:30) 학교 앞 좁은 이면도로와 통학버스 합류 지점은 무리한 끼어들기와 정체로 위험에 노출되어 있습니다.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-neonOrange"></i>
+                        <span>학교 앞 이면도로 상습 병목 현장</span>
+                    </div>
+                </div>
+
+                <!-- 2. 데이터의 힘 -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl glass-card-hover border-cyan-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-neonCyan text-2xl mb-5">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <span class="text-xs text-neonCyan font-mono font-bold block mb-1">02. POWER OF DATA</span>
+                        <h3 class="text-xl font-bold text-white mb-3">데이터의 힘</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-light mb-4">
+                            <strong>30분간 현장 직접 관찰 및 조사 내용:</strong> 관찰을 통해 수집한 등교 시간대 합류 구간 실측 데이터입니다.
+                        </p>
+                        <div class="space-y-2.5 bg-slate-950/70 p-4 rounded-2xl border border-slate-800 text-xs">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">30분간 무리한 끼어들기</span>
+                                <span class="font-bold text-neonOrange">32회</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">평균 진입 대기 시간</span>
+                                <span class="font-bold text-neonRed">4.5배 경과</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">급제동 연쇄 위험</span>
+                                <span class="font-bold text-neonCyan">분당 4회</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check text-neonCyan"></i>
+                        <span>현장관찰 기반 분석 데이터</span>
+                    </div>
+                </div>
+
+                <!-- 3. 기존 방식의 한계 -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl glass-card-hover border-red-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-neonRed text-2xl mb-5">
+                            <i class="fa-solid fa-traffic-light"></i>
+                        </div>
+                        <span class="text-xs text-neonRed font-mono font-bold block mb-1">03. LIMITATION</span>
+                        <h3 class="text-xl font-bold text-white mb-3">기존 방식의 한계</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-light">
+                            <strong>고정 신호등 & 무질서한 진입:</strong> 현재의 고정된 신호등은 차가 없어도 신호를 바꿔주어 비효율적이며, 통제 장치 없는 차선 합류는 무질서한 진입을 유발합니다.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-xmark text-neonRed"></i>
+                        <span>비효율적 신호 체계 한계 명확</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: 우리만의 해결책 ================= -->
+        <section id="tabContent-2" class="tab-content hidden space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-mono font-bold text-neonCyan tracking-widest uppercase">// SECTION 02</span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">2. 우리만의 해결책</h1>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- 1. 아이템 소개 -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl glass-card-hover border-cyan-500/30">
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-neonCyan text-2xl mb-5">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <span class="text-xs text-neonCyan font-mono font-bold block mb-1">ITEM CONCEPT</span>
+                    <h3 class="text-xl font-bold text-white mb-3">아이템 소개</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed font-light mb-4">
+                        <strong>지퍼 합류 스마트 제어 시스템:</strong> 자동차(마퀸 RC카)가 접근해야만 실시간으로 거리 센서가 감지하여 신호등이 동적으로 동작하는 자동 1:1 교대 진입 시스템.
+                    </p>
+                    <div class="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200">
+                        <i class="fa-solid fa-circle-check text-neonCyan mr-1"></i> 차량 접근 시에만 작동하는 스마트 에너지 saving & 차선 교대 시스템
+                    </div>
+                </div>
+
+                <!-- 2. 작동 원리 -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl glass-card-hover border-cyan-500/30">
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-neonCyan text-2xl mb-5">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <span class="text-xs text-neonCyan font-mono font-bold block mb-1">HOW IT WORKS</span>
+                    <h3 class="text-xl font-bold text-white mb-3">작동 원리 (센서 & 구조 설계)</h3>
+                    <ul class="space-y-3 text-xs text-slate-300 font-light">
+                        <li class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-cyan-500/20 text-neonCyan font-mono font-bold flex items-center justify-center text-[10px]">1</span>
+                            <span><strong>초음파 센서:</strong> 차량 접근 거리(5cm 이하) 실시간 정체 측정</span>
+                        </li>
+                        <li class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-cyan-500/20 text-neonCyan font-mono font-bold flex items-center justify-center text-[10px]">2</span>
+                            <span><strong>마이크로비트:</strong> 중앙 제어부 1:1 교대 진입 알고리즘 연산</span>
+                        </li>
+                        <li class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-cyan-500/20 text-neonCyan font-mono font-bold flex items-center justify-center text-[10px]">3</span>
+                            <span><strong>네오픽셀:</strong> 본선/합류선 녹색·적색 시각 신호 교차 점등</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 3. 시제품 시연 -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl glass-card-hover border-cyan-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-neonCyan text-2xl mb-5">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <span class="text-xs text-neonCyan font-mono font-bold block mb-1">PROTOTYPE DEMO</span>
+                        <h3 class="text-xl font-bold text-white mb-3">시제품 시연 & 검증</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-light mb-4">
+                            <strong>마퀸 RC카 기반 실체 작동 증명:</strong> 마퀸 RC카와 마이크로비트를 연동하여 5cm 이하 차량 감지 시 1:1 교대 진입 신호등 로직이 실제로 작동함을 검증하였습니다.
+                        </p>
+                    </div>
+                    
+                    <!-- Prototype High-Fidelity SVG Graphic Display (No File Dependency) -->
+                    <div class="rounded-2xl bg-slate-950 border border-cyan-500/40 overflow-hidden shadow-neon-cyan p-4 relative">
+                        <!-- Simulated Testbed Canvas SVG -->
+                        <div class="w-full h-56 bg-slate-900/90 rounded-xl border border-slate-800 p-3 flex flex-col justify-between relative overflow-hidden">
+                            <!-- Background Grid Lines -->
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#00F2FE_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            
+                            <!-- Top Status Info -->
+                            <div class="flex justify-between items-center z-10 text-[11px] font-mono">
+                                <span class="bg-cyan-950/80 text-neonCyan border border-cyan-500/40 px-2.5 py-0.5 rounded-full font-bold">
+                                    <i class="fa-solid fa-wifi text-[9px] mr-1"></i> Micro:bit Radio Connected
+                                </span>
+                                <span class="bg-emerald-950/80 text-neonGreen border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">
+                                    <i class="fa-solid fa-ruler-horizontal text-[9px] mr-1"></i> Threshold: &le; 5cm
+                                </span>
+                            </div>
+
+                            <!-- Diagram Visual representation of physical setup -->
+                            <div class="my-auto grid grid-cols-12 gap-2 items-center z-10">
+                                <!-- Waiting Queue Cars -->
+                                <div class="col-span-4 flex flex-col gap-1.5 items-center">
+                                    <span class="text-[9px] font-mono text-slate-400">합류 대기 차량</span>
+                                    <div class="w-full bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5 items-center">
+                                        <div class="w-10 h-5 bg-gradient-to-r from-red-500 to-rose-600 rounded border border-rose-300 flex items-center justify-center text-[8px] font-bold text-white shadow-md">
+                                            CAR #1
+                                        </div>
+                                        <div class="w-10 h-5 bg-gradient-to-r from-orange-500 to-amber-600 rounded border border-amber-300 flex items-center justify-center text-[8px] font-bold text-white shadow-md">
+                                            CAR #2
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- NeoPixel Signal Light Tower -->
+                                <div class="col-span-4 flex flex-col items-center">
+                                    <span class="text-[9px] font-mono text-cyan-400 font-bold mb-1">NeoPixel Tower</span>
+                                    <div class="w-7 bg-slate-950 p-1.5 rounded-xl border border-cyan-500/50 flex flex-col items-center gap-1 shadow-neon-cyan">
+                                        <!-- Green NeoPixel LEDs -->
+                                        <div class="w-4 h-4 rounded-full bg-emerald-400 shadow-[0_0_10px_#00FF66] animate-pulse"></div>
+                                        <div class="w-4 h-4 rounded-full bg-emerald-400 shadow-[0_0_10px_#00FF66]"></div>
+                                        <div class="w-[80%] h-0.5 bg-slate-800 my-0.5"></div>
+                                        <!-- Red NeoPixel LEDs -->
+                                        <div class="w-4 h-4 rounded-full bg-rose-600 opacity-60"></div>
+                                        <div class="w-4 h-4 rounded-full bg-rose-600 opacity-60"></div>
+                                    </div>
+                                    <span class="text-[8px] font-mono text-neonGreen font-bold mt-1">MAIN: GO</span>
+                                </div>
+
+                                <!-- Maqueen Robot & Sensor -->
+                                <div class="col-span-4 flex flex-col items-center">
+                                    <span class="text-[9px] font-mono text-slate-400 mb-1">Maqueen & Sensor</span>
+                                    <div class="w-full bg-slate-950/80 p-2 rounded-lg border border-cyan-500/30 flex flex-col items-center gap-1 text-center">
+                                        <i class="fa-solid fa-robot text-neonCyan text-xl"></i>
+                                        <span class="text-[9px] font-bold text-white">마퀸 RC카</span>
+                                        <span class="text-[8px] font-mono text-cyan-300">초음파 감지 중</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Tag -->
+                            <div class="text-center z-10 pt-1 border-t border-slate-800">
+                                <span class="text-[10px] text-slate-400">
+                                    <i class="fa-solid fa-circle-check text-neonGreen mr-1"></i> 마이크로비트 + 센서망 교대 신호 제어 시제품
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-2.5 bg-slate-900/90 text-center border-t border-slate-800 mt-2 rounded-xl">
+                            <span class="text-xs font-bold text-white block">
+                                <i class="fa-solid fa-microchip text-neonCyan mr-1"></i> 마이크로비트 + 네오픽셀 + 마퀸 교대 합류 시제품
+                            </span>
+                            <span class="text-[10px] text-slate-400">초음파 감지 (5cm 이하) ➔ 네오픽셀 교대 신호등 (적색/녹색) 연동 완료</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: 누가 돈을 내고 쓰는가? ================= -->
+        <section id="tabContent-3" class="tab-content hidden space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-mono font-bold text-neonCyan tracking-widest uppercase">// SECTION 03</span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">3. 누가 돈을 내고 쓰는가?</h1>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 주 고객 -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl glass-card-hover border-cyan-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-neonCyan text-2xl mb-5">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <span class="text-xs text-neonCyan font-mono font-bold block mb-1">TARGET CUSTOMERS</span>
+                        <h3 class="text-2xl font-bold text-white mb-4">주 고객층 (Target Buyers)</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
+                                <i class="fa-solid fa-building-columns text-neonCyan text-lg mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">지자체 (스마트 시티 / 교통 인프라 부서)</h4>
+                                    <p class="text-xs text-slate-400 font-light mt-0.5">시·군·구 교통행정과, 도로 관리 부서 등 스쿨존 병목 민원 해결</p>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
+                                <i class="fa-solid fa-city text-neonCyan text-lg mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">대단지 아파트 관리사무소</h4>
+                                    <p class="text-xs text-slate-400 font-light mt-0.5">출근 시간대 아파트 출구 및 대로변 합류 구간 병목 갈등 완화</p>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
+                                <i class="fa-solid fa-school text-neonCyan text-lg mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">학교 앞 및 이면도로 관리소</h4>
+                                    <p class="text-xs text-slate-400 font-light mt-0.5">학생 통학 안전 확보 및 좁은 골목길 차선 합류 자동 교대 통제</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fa-solid fa-handshake text-neonCyan"></i>
+                        <span>공공 안전 & 입주민 민원 해결형 맞춤 B2G/B2B 모델</span>
+                    </div>
+                </div>
+
+                <!-- 시장 규모 & 단계별 로드맵 (지리적 단계 확장) -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl glass-card-hover border-cyan-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-neonCyan text-2xl mb-5">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <span class="text-xs text-neonCyan font-mono font-bold block mb-1">ROADMAP & MARKET EXPANSION</span>
+                        <h3 class="text-2xl font-bold text-white mb-2">지리적 3단계 확장 로드맵</h3>
+                        <p class="text-xs text-slate-400 font-light mb-5">
+                            우리 학교 통학로 실증부터 시작하여 광주 전역으로 검증된 시스템을 안전하게 넓혀갑니다.
+                        </p>
+
+                        <!-- Step 1 -->
+                        <div class="space-y-3">
+                            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-emerald-500/40 flex items-start gap-3">
+                                <span class="w-7 h-7 rounded-xl bg-emerald-500/20 text-neonGreen font-mono font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-emerald-500/30">1단계</span>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h4 class="text-sm font-bold text-white">초기 실증 (우리동네 스쿨존)</h4>
+                                        <span class="text-[10px] bg-emerald-950 text-neonGreen border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">5개소 집중 설치</span>
+                                    </div>
+                                    <p class="text-xs text-slate-300 font-light mt-1">우리 학교 앞 및 인근 초등학교 통학로 5곳 집중 설치 및 실제 데이터 검증</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 flex items-start gap-3">
+                                <span class="w-7 h-7 rounded-xl bg-cyan-500/20 text-neonCyan font-mono font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-cyan-500/30">2단계</span>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h4 class="text-sm font-bold text-white">지역 확장 (관내 주요 스쿨존)</h4>
+                                        <span class="text-[10px] bg-cyan-950 text-neonCyan border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">50개소 (약 2~3억 원)</span>
+                                    </div>
+                                    <p class="text-xs text-slate-300 font-light mt-1">광주 관내 주요 스쿨존 및 상습 정체 위험 이면도로 50곳으로 확대 적용</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-blue-500/40 flex items-start gap-3">
+                                <span class="w-7 h-7 rounded-xl bg-blue-500/20 text-blue-400 font-mono font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-blue-500/30">3단계</span>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h4 class="text-sm font-bold text-white">목표 시장 (광주시 전역 완성)</h4>
+                                        <span class="text-[10px] bg-blue-950 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold">300개소 (약 15~20억 원)</span>
+                                    </div>
+                                    <p class="text-xs text-slate-300 font-light mt-1">광주광역시 전체 통학로 및 아파트 단지 합류 구간 300곳 구축 완성</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fa-solid fa-bullseye text-neonCyan"></i>
+                        <span>부담 없는 단계별 보급으로 확실한 안전·개선 성과 입증</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: 왜 우리 제품인가? ================= -->
+        <section id="tabContent-4" class="tab-content hidden space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-mono font-bold text-neonGreen tracking-widest uppercase">// SECTION 04</span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">4. 왜 우리 제품인가?</h1>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 1. 가성비와 접근성 -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl glass-card-hover border-emerald-500/30">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-neonGreen text-2xl mb-5">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                    <span class="text-xs text-neonGreen font-mono font-bold block mb-1">COST ADVANTAGE</span>
+                    <h3 class="text-2xl font-bold text-white mb-3">가성비와 접근성</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed font-light mb-6">
+                        억 대의 고가 레이더 장비 대신, 저렴한 AI 비전 센서 및 초음파 센서와 마퀸 제어 시스템을 결합하여 구축 비용을 **80% 절감**할 수 있습니다.
+                    </p>
+
+                    <div class="p-5 rounded-2xl bg-slate-900 border border-emerald-500/30 text-center">
+                        <span class="text-xs text-slate-400 block mb-1">기존 대형 라이다 대비 구축 비용</span>
+                        <span class="text-4xl font-black text-neonGreen">80% 절감</span>
+                    </div>
+                </div>
+
+                <!-- 2. 현장 맞춤형 -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl glass-card-hover border-emerald-500/30">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-neonGreen text-2xl mb-5">
+                        <i class="fa-solid fa-school"></i>
+                    </div>
+                    <span class="text-xs text-neonGreen font-mono font-bold block mb-1">NICHE MARKET SPECIALIZED</span>
+                    <h3 class="text-2xl font-bold text-white mb-3">현장 맞춤형 (틈새 구간 특화)</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed font-light mb-6">
+                        대형 교통 시스템이 미처 챙기지 못하는 **'학교 앞'**, **'골목길 이면도로'** 등 틈새 구간에 특화된 유연한 맞춤 설치가 가능합니다.
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-3 text-center text-xs">
+                        <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                            <i class="fa-solid fa-graduation-cap text-neonGreen text-base block mb-1"></i>
+                            <span class="font-bold text-white">학교 앞 도로</span>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                            <i class="fa-solid fa-road text-neonGreen text-base block mb-1"></i>
+                            <span class="font-bold text-white">골목길 이면도로</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: 수익 모델 ================= -->
+        <section id="tabContent-5" class="tab-content hidden space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-mono font-bold text-neonOrange tracking-widest uppercase">// SECTION 05</span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">5. 수익 모델</h1>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 1. 판매 방식 및 가격 체계 -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl glass-card-hover border-orange-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-neonOrange text-2xl mb-5">
+                            <i class="fa-solid fa-tags"></i>
+                        </div>
+                        <span class="text-xs text-neonOrange font-mono font-bold block mb-1">PRICING STRUCTURE</span>
+                        <h3 class="text-2xl font-bold text-white mb-4">직관적인 2단계 가격 모델</h3>
+                        
+                        <div class="space-y-4">
+                            <!-- 초기 설치비 -->
+                            <div class="p-4 rounded-2xl bg-slate-900 border border-orange-500/30 space-y-2">
+                                <div class="flex items-center justify-between flex-wrap gap-1">
+                                    <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                        <i class="fa-solid fa-screwdriver-wrench text-neonOrange"></i> 초기 구축비 (하드웨어 일체)
+                                    </span>
+                                    <span class="text-base font-black text-neonOrange">구간당 50만 원</span>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+                                    <span class="text-slate-400">💡 체감 가격 비교</span>
+                                    <span class="font-bold text-amber-300">🍗 치킨 25마리 / 📱 태블릿 1대 값</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 font-light leading-relaxed">
+                                    기존 대형 교통 레이더/카메라 체계(500만~1,000만 원) 대비 <strong class="text-neonOrange font-bold">90% 비용 절감</strong>. (마이크로비트, 5cm 센서망, 네오픽셀 신호탑, 하우징 일체 포함)
+                                </p>
+                            </div>
+
+                            <!-- 월 유지보수비 -->
+                            <div class="p-4 rounded-2xl bg-slate-900 border border-cyan-500/30 space-y-2">
+                                <div class="flex items-center justify-between flex-wrap gap-1">
+                                    <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                        <i class="fa-solid fa-rotate text-neonCyan"></i> 월 유지보수 & 데이터 (구독형)
+                                    </span>
+                                    <span class="text-base font-black text-neonCyan">월 2만 원</span>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+                                    <span class="text-slate-400">💡 체감 가격 비교</span>
+                                    <span class="font-bold text-cyan-300">🎬 넷플릭스 1개월 구독료 수준</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 font-light leading-relaxed">
+                                    원격 펌웨어 updates(OTA), 초음파 센서 주기 점검, 실시간 교통 정체 분석 데이터 리포트 제공.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fa-solid fa-circle-dollar-to-slot text-neonOrange"></i>
+                        <span>부담 없는 초저가 도입 비용으로 빠른 보급 실현</span>
+                    </div>
+                </div>
+
+                <!-- 2. 공공 사업 & 지원금 연계 -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl glass-card-hover border-orange-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-neonOrange text-2xl mb-5">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                        </div>
+                        <span class="text-xs text-neonOrange font-mono font-bold block mb-1">PUBLIC FUNDING</span>
+                        <h3 class="text-2xl font-bold text-white mb-4">초기 설치 부담 0원 공공 연계</h3>
+                        
+                        <p class="text-sm text-slate-300 leading-relaxed font-light mb-5">
+                            학교나 아파트 단지 자체 예산 지출 없이, 공공 지원금 공모 사업을 활용해 초기 구축 비용을 100% 확보합니다.
+                        </p>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-start gap-3">
+                                <i class="fa-solid fa-shield-halved text-neonOrange text-sm mt-0.5"></i>
+                                <div>
+                                    <h4 class="font-bold text-white">어린이 보호구역 안전 개선 예산</h4>
+                                    <p class="text-[11px] text-slate-400 font-light mt-0.5">지자체 통학로 안전 시설물 보급 국비·시비 국고 보조금 연계</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-start gap-3">
+                                <i class="fa-solid fa-lightbulb text-neonOrange text-sm mt-0.5"></i>
+                                <div>
+                                    <h4 class="font-bold text-white">스마트시티 혁신 리빙랩 공모전</h4>
+                                    <p class="text-[11px] text-slate-400 font-light mt-0.5">청소년/학생 아이디어 사업화 정부 지원금으로 1차 시범 구축비 전액 충당</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-orange-950/40 border border-orange-500/30 text-xs text-orange-200 mt-5">
+                            <i class="fa-solid fa-star text-neonOrange mr-1"></i>
+                            <strong>학교 & 아파트 실질 부담금 0원:</strong> 지자체 보조금 기반 무상 설치 후 구독료만 납부하는 윈-윈 구조
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fa-solid fa-award text-neonOrange"></i>
+                        <span>학생 창업 및 지자체 리빙랩 공모에 최적화된 사업 구조</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 6: 팀의 비전 ================= -->
+        <section id="tabContent-6" class="tab-content hidden space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-mono font-bold text-neonCyan tracking-widest uppercase">// SECTION 06</span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">6. 팀의 비전</h1>
+            </div>
+
+            <!-- 팀원 역할 -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 rounded-3xl text-center glass-card-hover border-cyan-500/30">
+                    <div class="w-16 h-16 rounded-full bg-cyan-500/20 border border-cyan-500/40 mx-auto mb-4 flex items-center justify-center text-2xl text-neonCyan">
+                        <i class="fa-solid fa-cube"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">모델링 전문가</h3>
+                    <span class="text-xs text-cyan-400 font-mono block mb-2">3D Modeling & Design</span>
+                    <p class="text-xs text-slate-400 font-light">도로 합류 구간 구조 설계 및 시제품 케이싱 3D 모델링 담당</p>
+                </div>
+
+                <div class="glass-card p-6 rounded-3xl text-center glass-card-hover border-cyan-500/30">
+                    <div class="w-16 h-16 rounded-full bg-cyan-500/20 border border-cyan-500/40 mx-auto mb-4 flex items-center justify-center text-2xl text-neonCyan">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">로봇 제어 전문가</h3>
+                    <p class="text-xs text-cyan-400 font-mono block mb-2">Micro:bit & Robotics</p>
+                    <p class="text-xs text-slate-400 font-light">마이크로비트 센서 알고리즘 코딩 및 마퀸 RC카 제어 담당</p>
+                </div>
+
+                <div class="glass-card p-6 rounded-3xl text-center glass-card-hover border-cyan-500/30">
+                    <div class="w-16 h-16 rounded-full bg-cyan-500/20 border border-cyan-500/40 mx-auto mb-4 flex items-center justify-center text-2xl text-neonCyan">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">시장 분석가</h3>
+                    <p class="text-xs text-cyan-400 font-mono block mb-2">Market & Business Strategy</p>
+                    <p class="text-xs text-slate-400 font-light">학교 앞 이면도로 관찰 데이터 조사 및 타깃 시장 BM 수립</p>
+                </div>
+            </div>
+
+            <!-- 핵심 비전 -->
+            <div class="glass-card p-8 rounded-3xl text-center border-2 border-cyan-500/50 bg-gradient-to-b from-slate-900 to-cyan-950/40 shadow-neon-cyan">
+                <span class="text-xs text-cyan-400 font-mono font-bold tracking-widest block mb-2">// CORE MISSION</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-white leading-tight mb-4">
+                    "광주의 교통 체증을 넘어, <br/>
+                    대한민국 모든 학교 앞 골목길을 <span class="text-neonCyan neon-text-cyan">시원하게 뚫겠습니다.</span>"
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-300 font-light max-w-2xl mx-auto">
+                    지식재산일반 수행평가에서 시작된 학생 창업 아이디어가 대한민국 모든 골목길의 안전과 통행 원활을 혁신합니다.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM CONTROLS & FOOTER -->
+    <footer class="glass-card border-t border-slate-800 px-6 py-4 mt-auto">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <button onclick="prevTab()" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-cyan-500 text-xs font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-chevron-left"></i> 이전 단계
+            </button>
+
+            <span id="slideIndicator" class="text-xs font-mono font-bold text-cyan-400">
+                SLIDE 1 / 6
+            </span>
+
+            <button onclick="nextTab()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 text-xs font-extrabold transition-all flex items-center gap-2 shadow-neon-cyan hover:scale-105">
+                다음 단계 <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- TAB SWITCHING JAVASCRIPT -->
+    <script>
+        let currentTab = 1;
+        const totalTabs = 6;
+
+        function switchTab(tabIndex) {
+            if (tabIndex < 1 || tabIndex > totalTabs) return;
+
+            // Hide all tab contents
+            for (let i = 1; i <= totalTabs; i++) {
+                const content = document.getElementById(`tabContent-${i}`);
+                const btn = document.getElementById(`tabBtn-${i}`);
+                if (content) content.classList.add('hidden');
+                if (btn) {
+                    btn.className = "tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60";
+                }
+            }
+
+            // Show selected tab content
+            const activeContent = document.getElementById(`tabContent-${tabIndex}`);
+            const activeBtn = document.getElementById(`tabBtn-${tabIndex}`);
+
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.className = "tab-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-neon-cyan";
+            }
+
+            currentTab = tabIndex;
+
+            // Update indicators
+            document.getElementById('slideIndicator').innerText = `SLIDE ${currentTab} / ${totalTabs}`;
+            document.getElementById('mobileTabIndicator').innerText = `${currentTab} / ${totalTabs}`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function prevTab() {
+            if (currentTab > 1) {
+                switchTab(currentTab - 1);
+            } else {
+                switchTab(totalTabs);
+            }
+        }
+
+        function nextTab() {
+            if (currentTab < totalTabs) {
+                switchTab(currentTab + 1);
+            } else {
+                switchTab(1);
+            }
+        }
+
+        // Keyboard Arrow Navigation
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextTab();
+            if (e.key === 'ArrowLeft') prevTab();
+        });
+    </script>
+</body>
+</html>
